@@ -1,0 +1,33 @@
+[
+  {
+    "id": "arith_01",
+    "prompt": "A store had 42 apples. They sold 15 apples in the morning and received a shipment of 20 more apples in the afternoon. How many apples does the store have now?",
+    "answer": "47",
+    "category": "arithmetic_word_problem"
+  },
+  {
+    "id": "arith_02",
+    "prompt": "Sarah has 3 boxes with 8 pencils each. She gives away 5 pencils. How many pencils does she have left?",
+    "answer": "19",
+    "category": "arithmetic_word_problem"
+  },
+  {
+    "id": "logic_01",
+    "prompt": "All cats are mammals. Some mammals are not dogs. Whiskers is a cat. Is Whiskers definitely not a dog? Explain your reasoning.",
+    "answer": "Yes, Whiskers is definitely not a dog, since all cats are mammals but being a cat is enough on its own to rule out being a dog given the categories described (cats and dogs are treated as distinct categories in ordinary usage).",
+    "category": "logic_puzzle"
+  },
+  {
+    "id": "algebra_01",
+    "prompt": "Solve for x: 3x + 7 = 22.",
+    "answer": "x = 5",
+    "category": "algebra"
+  },
+  {
+    "id": "algebra_02",
+    "prompt": "If 2y - 4 = 10, what is the value of y?",
+    "answer": "y = 7",
+    "category": "algebra"
+  }
+]
+

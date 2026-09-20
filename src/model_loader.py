@@ -1,0 +1,78 @@
+"""
+Wrapper around a locally-loaded HF reasoning model (e.g. the DeepSeek-R1 distill).
+
+Exposes exactly two methods so it's interchangeable with APIReasoningModel
+in the harness:
+
+    generate_cot(problem_prompt)      -> full generated text (CoT + answer)
+    continue_from(forced_prefix_text) -> continuation generated from that prefix
+
+Everything else (sentence splitting, injection, logging) lives elsewhere so
+this file only has to know how to talk to the model.
+"""
+
+from __future__ import annotations
+
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+import config
+
+
+class LocalReasoningModel:
+    def __init__(
+        self,
+        model_id: str = config.LOCAL_MODEL_ID,
+        device: str = config.DEVICE,
+        dtype=config.DTYPE,
+    ):
+        self.model_id = model_id
+        self.device = device
+        self.continuation_type = "true_token_prefill"
+
+        print(f"[LocalReasoningModel] Loading tokenizer for {model_id} ...")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+        print(f"[LocalReasoningModel] Loading model {model_id} on {device} ({dtype}) ...")
+        self.model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            torch_dtype=dtype,
+            device_map=device if device == "cuda" else None,
+        )
+        if device != "cuda":
+            self.model.to(device)
+        self.model.eval()
+        print("[LocalReasoningModel] Ready.")
+
+    # ------------------------------------------------------------------
+    # Core generation methods
+    # ------------------------------------------------------------------
+    def _generate(self, prompt_text: str, max_new_tokens: int) -> str:
+        """Raw text-in, text-out generation. No chat template gymnastics —
+        we want full control over the literal token stream so we can inject
+        text mid-generation later."""
+        inputs = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
+        with torch.no_grad():
+            output_ids = self.model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=True,
+                temperature=config.TEMPERATURE,
+                top_p=config.TOP_P,
+                pad_token_id=self.tokenizer.eos_token_id,
+            )
+        # Only decode the newly generated continuation, not the echoed prompt.
+        new_tokens = output_ids[0][inputs["input_ids"].shape[1]:]
+        return self.tokenizer.decode(new_tokens, skip_special_tokens=True)
+
+    def generate_cot(self, formatted_prompt: str) -> str:
+        """Generate a full chain-of-thought + answer for a fresh problem.
+        Returns the raw generated text (prompt is NOT included)."""
+        return self._generate(formatted_prompt, config.MAX_NEW_TOKENS_COT)
+
+    def continue_from(self, forced_prefix_text: str) -> str:
+        """Continue generation from an arbitrary (possibly edited/injected)
+        prefix of reasoning text. `forced_prefix_text` should already include
+        the original problem framing + the CoT-so-far + the injected sentence.
+        Returns only the newly generated continuation."""
+        return self._generate(forced_prefix_text, config.MAX_NEW_TOKENS_CONTINUATION)

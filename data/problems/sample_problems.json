@@ -1,0 +1,146 @@
+[
+  {
+    "id": "arith_01",
+    "prompt": "A store had 42 apples. They sold 15 apples in the morning and received a shipment of 20 more apples in the afternoon. How many apples does the store have now?",
+    "problem": "A store had 42 apples. They sold 15 apples in the morning and received a shipment of 20 more apples in the afternoon. How many apples does the store have now?",
+    "answer": "47",
+    "ground_truth": "47",
+    "category": "arithmetic"
+  },
+  {
+    "id": "arith_02",
+    "prompt": "John bought 3 books for $12 each and a notebook for $5. He paid with a $50 bill. How much change did he receive?",
+    "problem": "John bought 3 books for $12 each and a notebook for $5. He paid with a $50 bill. How much change did he receive?",
+    "answer": "9",
+    "ground_truth": "9",
+    "category": "arithmetic"
+  },
+  {
+    "id": "arith_03",
+    "prompt": "A rectangular garden is 8 meters long and 5 meters wide. What is its perimeter?",
+    "problem": "A rectangular garden is 8 meters long and 5 meters wide. What is its perimeter?",
+    "answer": "26",
+    "ground_truth": "26",
+    "category": "geometry"
+  },
+  {
+    "id": "arith_04",
+    "prompt": "If a train travels at 60 km/h for 2.5 hours, how far does it go?",
+    "problem": "If a train travels at 60 km/h for 2.5 hours, how far does it go?",
+    "answer": "150",
+    "ground_truth": "150",
+    "category": "rate"
+  },
+  {
+    "id": "arith_05",
+    "prompt": "Sarah has 24 chocolates. She gives an equal number to each of her 6 friends. How many chocolates does each friend receive?",
+    "problem": "Sarah has 24 chocolates. She gives an equal number to each of her 6 friends. How many chocolates does each friend receive?",
+    "answer": "4",
+    "ground_truth": "4",
+    "category": "arithmetic"
+  },
+  {
+    "id": "arith_06",
+    "prompt": "A recipe requires 3/4 cup of sugar. If you want to make half the recipe, how much sugar do you need?",
+    "problem": "A recipe requires 3/4 cup of sugar. If you want to make half the recipe, how much sugar do you need?",
+    "answer": "0.375",
+    "ground_truth": "0.375",
+    "category": "fractions"
+  },
+  {
+    "id": "logic_01",
+    "prompt": "All roses are flowers. Some flowers are red. Therefore, some roses are red. Is this statement logically valid?",
+    "problem": "All roses are flowers. Some flowers are red. Therefore, some roses are red. Is this statement logically valid?",
+    "answer": "No",
+    "ground_truth": "No",
+    "category": "logic"
+  },
+  {
+    "id": "logic_02",
+    "prompt": "If it rains, the ground gets wet. The ground is wet. Can we conclude that it rained?",
+    "problem": "If it rains, the ground gets wet. The ground is wet. Can we conclude that it rained?",
+    "answer": "No",
+    "ground_truth": "No",
+    "category": "logic"
+  },
+  {
+    "id": "logic_03",
+    "prompt": "Every student in the class passed the exam. Alice is a student in the class. Did Alice pass the exam?",
+    "problem": "Every student in the class passed the exam. Alice is a student in the class. Did Alice pass the exam?",
+    "answer": "Yes",
+    "ground_truth": "Yes",
+    "category": "logic"
+  },
+  {
+    "id": "logic_04",
+    "prompt": "If a number is divisible by 4, it is even. 28 is divisible by 4. Is 28 even?",
+    "problem": "If a number is divisible by 4, it is even. 28 is divisible by 4. Is 28 even?",
+    "answer": "Yes",
+    "ground_truth": "Yes",
+    "category": "logic"
+  },
+  {
+    "id": "arith_07",
+    "prompt": "A car's fuel tank holds 45 liters. After a trip, it has 12 liters left. How many liters were used?",
+    "problem": "A car's fuel tank holds 45 liters. After a trip, it has 12 liters left. How many liters were used?",
+    "answer": "33",
+    "ground_truth": "33",
+    "category": "arithmetic"
+  },
+  {
+    "id": "arith_08",
+    "prompt": "A triangle has sides of length 5 cm, 12 cm, and 13 cm. What is its area?",
+    "problem": "A triangle has sides of length 5 cm, 12 cm, and 13 cm. What is its area?",
+    "answer": "30",
+    "ground_truth": "30",
+    "category": "geometry"
+  },
+  {
+    "id": "arith_09",
+    "prompt": "The price of a shirt was increased by 20% to $36. What was the original price?",
+    "problem": "The price of a shirt was increased by 20% to $36. What was the original price?",
+    "answer": "30",
+    "ground_truth": "30",
+    "category": "percentage"
+  },
+  {
+    "id": "arith_10",
+    "prompt": "A baker made 120 cookies. He packed them into boxes of 8 cookies each. How many boxes did he fill?",
+    "problem": "A baker made 120 cookies. He packed them into boxes of 8 cookies each. How many boxes did he fill?",
+    "answer": "15",
+    "ground_truth": "15",
+    "category": "arithmetic"
+  },
+  {
+    "id": "logic_05",
+    "prompt": "If all mammals are warm-blooded and whales are mammals, are whales warm-blooded?",
+    "problem": "If all mammals are warm-blooded and whales are mammals, are whales warm-blooded?",
+    "answer": "Yes",
+    "ground_truth": "Yes",
+    "category": "logic"
+  },
+  {
+    "id": "arith_11",
+    "prompt": "A water tank is filled at a rate of 3 liters per minute. How many minutes will it take to fill 75 liters?",
+    "problem": "A water tank is filled at a rate of 3 liters per minute. How many minutes will it take to fill 75 liters?",
+    "answer": "25",
+    "ground_truth": "25",
+    "category": "rate"
+  },
+  {
+    "id": "arith_12",
+    "prompt": "A library has 4 shelves. Each shelf holds 30 books. After acquiring 45 new books, the librarian distributes them evenly across the shelves. How many books are now on each shelf?",
+    "problem": "A library has 4 shelves. Each shelf holds 30 books. After acquiring 45 new books, the librarian distributes them evenly across the shelves. How many books are now on each shelf?",
+    "answer": "41.25",
+    "ground_truth": "41.25",
+    "category": "arithmetic"
+  },
+  {
+    "id": "logic_06",
+    "prompt": "If a statement is true, then its contrapositive is also true. The statement 'If it is snowing, then it is cold' is true. Is the contrapositive 'If it is not cold, then it is not snowing' true?",
+    "problem": "If a statement is true, then its contrapositive is also true. The statement 'If it is snowing, then it is cold' is true. Is the contrapositive 'If it is not cold, then it is not snowing' true?",
+    "answer": "Yes",
+    "ground_truth": "Yes",
+    "category": "logic"
+  }
+]
