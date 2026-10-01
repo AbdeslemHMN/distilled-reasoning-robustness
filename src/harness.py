@@ -179,3 +179,13 @@ def run_batch(
                     f"logged to {out_path.name}"
                 )
     return records
+
+def prepare_problem_prompt(problem: Problem | dict | str) -> str:
+    """Formats the base prompt from a Problem object, dictionary, or raw string."""
+    if isinstance(problem, str):
+        prompt_text = problem
+    elif isinstance(problem, dict):
+        prompt_text = problem.get("prompt", problem.get("problem", ""))
+    else:
+        prompt_text = getattr(problem, "prompt", str(problem))
+    return format_problem_prompt(prompt_text)

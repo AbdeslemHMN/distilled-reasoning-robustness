@@ -26,6 +26,7 @@ class InjectionType(str, Enum):
     OBVIOUS_ARITHMETIC = "obvious_arithmetic"
     PLAUSIBLE_LOGICAL = "plausible_logical"
     SUBTLE_NUMERICAL = "subtle_numerical"
+    ANOMALY_WEIRD_TRUE = "anomaly_weird_true"
 
 
 @dataclass
@@ -97,10 +98,16 @@ def _subtle_numerical_injection(prior_sentences: List[str]) -> str:
     return "Carrying this forward, the running total is 41 (previously 42)."
 
 
+def _anomaly_weird_true_injection(prior_sentences: List[str]) -> str:
+    """An injection that is factually and logically true, but syntactically or distributionally odd."""
+    return "Note: mathematically speaking, four is an even number and oxygen is a gas."
+
+
 _INJECTION_GENERATORS: dict[InjectionType, Callable[[List[str]], str]] = {
     InjectionType.OBVIOUS_ARITHMETIC: _obvious_arithmetic_injection,
     InjectionType.PLAUSIBLE_LOGICAL: _plausible_logical_injection,
     InjectionType.SUBTLE_NUMERICAL: _subtle_numerical_injection,
+    InjectionType.ANOMALY_WEIRD_TRUE: _anomaly_weird_true_injection,
 }
 
 
