@@ -7,9 +7,8 @@ spontaneously correct in Phase 1 by explicitly asking it.
 """
 import argparse
 from phase2_utils import load_transcripts, save_transcript
-from src.modal_runner import ModalReasoningModel, app
 
-def run_hindsight(input_transcript: str, output_file: str):
+def run_hindsight(input_transcript: str, output_file: str, use_local: bool = False):
     # Load transcripts filtered for failed self-corrections
     records = load_transcripts(input_transcript, filter_categories=["Rationalization", "Commits to Error"])
     print(f"Loaded {len(records)} records for hindsight evaluation.")
@@ -17,7 +16,12 @@ def run_hindsight(input_transcript: str, output_file: str):
         print("No eligible records found. Try running Phase 1 first or passing an unclassified transcript.")
         return
 
-    model = ModalReasoningModel()
+    if use_local:
+        from src.model_loader import LocalReasoningModel
+        model = LocalReasoningModel()
+    else:
+        from src.modal_runner import ModalReasoningModel
+        model = ModalReasoningModel()
     
     hindsight_instruction = (
         "\n\nWas the previous reasoning step correct? "
@@ -62,9 +66,13 @@ if __name__ == "__main__":
     # Defaulting to the phase 1 distilled output
     parser.add_argument("--input", default="data/transcripts/phase1_result_evaluate_adversarial_distilled.jsonl")
     parser.add_argument("--output", default="data/transcripts/phase2_hindsight.jsonl")
+    parser.add_argument("--local", action="store_true", help="Run locally")
     args = parser.parse_args()
     
-    # Run the Modal context block
-    with app.run():
-        run_hindsight(args.input, args.output)
+    if args.local:
+        run_hindsight(args.input, args.output, use_local=True)
+    else:
+        from src.modal_runner import app
+        with app.run():
+            run_hindsight(args.input, args.output, use_local=False)
 

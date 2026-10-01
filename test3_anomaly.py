@@ -7,13 +7,17 @@ oddity by injecting weird-but-true statements.
 """
 import argparse
 from phase2_utils import load_problems, save_transcript
-from src.modal_runner import ModalReasoningModel, app
 from src.harness import format_problem_prompt
 from src.injections import inject_error, InjectionType, build_forced_prefix_text
 
-def run_anomaly(problems_file: str, output_file: str):
+def run_anomaly(problems_file: str, output_file: str, use_local: bool = False):
     
-    model = ModalReasoningModel()
+    if use_local:
+        from src.model_loader import LocalReasoningModel
+        model = LocalReasoningModel()
+    else:
+        from src.modal_runner import ModalReasoningModel
+        model = ModalReasoningModel()
     
     problems = load_problems(problems_file)
     print(f"Loaded {len(problems)} problems for anomaly test.")
@@ -62,9 +66,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--problems", default="data/problems/sample_problems.json")
     parser.add_argument("--output", default="data/transcripts/phase2_anomaly.jsonl")
+    parser.add_argument("--local", action="store_true", help="Run locally")
     args = parser.parse_args()
     
-    # Run the Modal context block
-    with app.run():
-        run_anomaly(args.problems, args.output)
+    if args.local:
+        run_anomaly(args.problems, args.output, use_local=True)
+    else:
+        from src.modal_runner import app
+        with app.run():
+            run_anomaly(args.problems, args.output, use_local=False)
 

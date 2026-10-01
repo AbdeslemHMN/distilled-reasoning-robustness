@@ -47,19 +47,27 @@ class LocalReasoningModel:
     # ------------------------------------------------------------------
     # Core generation methods
     # ------------------------------------------------------------------
-    def _generate(self, prompt_text: str, max_new_tokens: int) -> str:
+    def _generate(self, prompt_text: str, max_new_tokens: int, temperature: float = config.TEMPERATURE, suppress_tokens: list[int] | None = None) -> str:
         """Raw text-in, text-out generation. No chat template gymnastics —
         we want full control over the literal token stream so we can inject
         text mid-generation later."""
+        from transformers import LogitsProcessorList
+        from phase2_utils import TokenSuppressionLogitsProcessor
         inputs = self.tokenizer(prompt_text, return_tensors="pt").to(self.device)
+        
+        logits_processor = LogitsProcessorList()
+        if suppress_tokens:
+            logits_processor.append(TokenSuppressionLogitsProcessor(suppressed_token_ids=suppress_tokens))
+            
         with torch.no_grad():
             output_ids = self.model.generate(
                 **inputs,
                 max_new_tokens=max_new_tokens,
-                do_sample=True,
-                temperature=config.TEMPERATURE,
-                top_p=config.TOP_P,
+                do_sample=temperature > 0,
+                temperature=temperature if temperature > 0 else None,
+                top_p=config.TOP_P if temperature > 0 else None,
                 pad_token_id=self.tokenizer.eos_token_id,
+                logits_processor=logits_processor,
             )
         # Only decode the newly generated continuation, not the echoed prompt.
         new_tokens = output_ids[0][inputs["input_ids"].shape[1]:]
@@ -70,9 +78,12 @@ class LocalReasoningModel:
         Returns the raw generated text (prompt is NOT included)."""
         return self._generate(formatted_prompt, config.MAX_NEW_TOKENS_COT)
 
-    def continue_from(self, forced_prefix_text: str) -> str:
-        """Continue generation from an arbitrary (possibly edited/injected)
-        prefix of reasoning text. `forced_prefix_text` should already include
-        the original problem framing + the CoT-so-far + the injected sentence.
-        Returns only the newly generated continuation."""
-        return self._generate(forced_prefix_text, config.MAX_NEW_TOKENS_CONTINUATION)
+    def continue_from(self, forced_prefix_text: str, suppress_tokens: list[int] | None = None) -> str:
+        return self._generate(forced_prefix_text, config.MAX_NEW_TOKENS_CONTINUATION, suppress_tokens=suppress_tokens)
+        
+    def generate_response(self, prompt: str) -> str:
+        return self._generate(prompt, 64, temperature=0.0)
+        
+    def get_suppressed_token_ids(self, words: list[str]) -> list[int]:
+        from phase2_utils import get_suppressed_token_ids
+        return get_suppressed_token_ids(self.tokenizer, words)

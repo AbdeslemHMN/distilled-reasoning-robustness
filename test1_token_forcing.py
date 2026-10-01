@@ -7,19 +7,21 @@ common correction reflex tokens using the Modal GPU Runner.
 """
 import argparse
 from phase2_utils import load_problems, save_transcript
-from src.modal_runner import ModalReasoningModel, app
 from src.harness import format_problem_prompt
 from src.injections import inject_error, InjectionType, build_forced_prefix_text
 
-def run_token_forcing(problems_file: str, output_file: str):
+def run_token_forcing(problems_file: str, output_file: str, use_local: bool = False):
     target_words = ["Wait", "wait", "Actually", "however", "But", "Correction"]
     
-    # Instantiate the adapter wrapping our @app.cls GPU runner
-    model = ModalReasoningModel()
-    
-    print(f"Retrieving suppressed token IDs for words: {target_words}")
-    # The tokenizer lives inside the container, so we ask the container for the IDs
-    suppressed_ids = model.runner.get_suppressed_token_ids.remote(target_words)
+    if use_local:
+        from src.model_loader import LocalReasoningModel
+        model = LocalReasoningModel()
+        suppressed_ids = model.get_suppressed_token_ids(target_words)
+    else:
+        from src.modal_runner import ModalReasoningModel
+        model = ModalReasoningModel()
+        print(f"Retrieving suppressed token IDs for words: {target_words}")
+        suppressed_ids = model.runner.get_suppressed_token_ids.remote(target_words)
     print(f"Suppressed Token IDs mapped: {suppressed_ids}")
     
     problems = load_problems(problems_file)
@@ -72,9 +74,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--problems", default="data/problems/sample_problems.json")
     parser.add_argument("--output", default="data/transcripts/phase2_token_forcing.jsonl")
+    parser.add_argument("--local", action="store_true", help="Run locally")
     args = parser.parse_args()
     
-    # Run the Modal context block
-    with app.run():
-        run_token_forcing(args.problems, args.output)
+    if args.local:
+        run_token_forcing(args.problems, args.output, use_local=True)
+    else:
+        from src.modal_runner import app
+        with app.run():
+            run_token_forcing(args.problems, args.output, use_local=False)
 
