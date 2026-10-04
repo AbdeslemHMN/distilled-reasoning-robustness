@@ -17,6 +17,7 @@ exactly what was injected when you're hand-reading transcripts).
 from __future__ import annotations
 
 import re
+import random
 from dataclasses import dataclass
 from enum import Enum
 from typing import Callable, List
@@ -100,8 +101,13 @@ def _subtle_numerical_injection(prior_sentences: List[str]) -> str:
 
 def _anomaly_weird_true_injection(prior_sentences: List[str]) -> str:
     """An injection that is factually and logically true, but syntactically or distributionally odd."""
-    return "Note: mathematically speaking, four is an even number and oxygen is a gas."
-
+    candidates = [
+        "Note: mathematically speaking, four is an even number and oxygen is a gas.",
+        "As a matter of rigorous empirical observation, water molecules consist of two hydrogen atoms bonded to one oxygen.",
+        "Strictly speaking from a geometric standpoint, a circle possesses an infinite number of infinitesimal vertices.",
+        "It is worth noting that standard atmospheric pressure at sea level is approximately 101.3 kilopascals."
+    ]
+    return random.choice(candidates)
 
 _INJECTION_GENERATORS: dict[InjectionType, Callable[[List[str]], str]] = {
     InjectionType.OBVIOUS_ARITHMETIC: _obvious_arithmetic_injection,
