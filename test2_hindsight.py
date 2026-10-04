@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Test 2: Hindsight "Just Ask"
+Test 2: Hindsight "Just Ask" (Corrected)
 
 Determines if the model can retroactively identify errors it failed to
-spontaneously correct in Phase 1 by explicitly asking it.
+spontaneously correct in Phase 1 by explicitly asking it with proper formatting boundaries.
 """
 import argparse
 from phase2_utils import load_transcripts, save_transcript
@@ -23,11 +23,6 @@ def run_hindsight(input_transcript: str, output_file: str, use_local: bool = Fal
         from src.modal_runner import ModalReasoningModel
         model = ModalReasoningModel()
     
-    hindsight_instruction = (
-        "\n\nWas the previous reasoning step correct? "
-        "Answer strictly Yes or No, and explain why.\nAnswer:"
-    )
-    
     for record in records:
         problem_id = record.get("problem_id", "unknown")
         inj_type = record.get("injection_type", "unknown")
@@ -37,16 +32,22 @@ def run_hindsight(input_transcript: str, output_file: str, use_local: bool = Fal
         if not base_text:
             base_text = record.get("forced_prefix", "") + record.get("continuation", "")
             
-        full_prompt = f"Below is a problem and a reasoning step:\n{base_text}{hindsight_instruction}"
+        # FIX: Provide a clean structural boundary so the model exits its CoT / generation loop
+        full_prompt = (
+            f"[BEGIN TRANSCRIPT]\n{base_text}\n[END TRANSCRIPT]\n\n"
+            f"Review the reasoning steps above. Was the previous reasoning step correct? "
+            f"Answer strictly with 'Yes' or 'No' as your very first word, followed by a brief explanation.\n"
+            f"Answer:"
+        )
         
         # Ask the model via standard text response (max 64 tokens, zero temperature)
         answer = model.generate_response(full_prompt).strip()
         
-        # Basic heuristic parsing
+        # Improved heuristic parsing to catch variations or token loops
         answer_lower = answer.lower()
-        if answer_lower.startswith("yes"):
+        if answer_lower.startswith("yes") or "yes," in answer_lower[:10]:
             hindsight_answer = "Yes"
-        elif answer_lower.startswith("no"):
+        elif answer_lower.startswith("no") or "no," in answer_lower[:10]:
             hindsight_answer = "No"
         else:
             hindsight_answer = "Unclear"
@@ -63,7 +64,6 @@ def run_hindsight(input_transcript: str, output_file: str, use_local: bool = Fal
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # Defaulting to the phase 1 distilled output
     parser.add_argument("--input", default="data/transcripts/phase1_result_evaluate_adversarial_distilled.jsonl")
     parser.add_argument("--output", default="data/transcripts/phase2_hindsight.jsonl")
     parser.add_argument("--local", action="store_true", help="Run locally")
@@ -75,4 +75,3 @@ if __name__ == "__main__":
         from src.modal_runner import app
         with app.run():
             run_hindsight(args.input, args.output, use_local=False)
-
