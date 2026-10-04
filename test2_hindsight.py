@@ -85,7 +85,7 @@ def run_hindsight(input_transcript: str, output_file: str, use_local: bool = Fal
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", default="data/transcripts/phase1_result_evaluate_adversarial_distilled.jsonl")
+    parser.add_argument("--input", default="data/transcripts/phase1_result_evaluate_adversarial_distilled_fixed.jsonl")
     parser.add_argument("--output", default="data/transcripts/phase2_hindsight.jsonl")
     parser.add_argument("--local", action="store_true", help="Run locally")
     args = parser.parse_args()
