@@ -121,7 +121,7 @@ class ModalReasoningModel:
         """Standard text prompting for single-turn Q&A without CoT specific configs."""
         return self.runner.generate.remote(
             prompt,
-            max_new_tokens=64, # Default short answer
+            max_new_tokens=128, # Default short answer
             temperature=0.0, # Deterministic answers
             top_p=None,
         )

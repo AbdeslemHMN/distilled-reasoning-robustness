@@ -333,29 +333,38 @@ This enables rapid identification of prompt issues, unboxed model outputs, or he
 
 ## Phase 2: Baselines & Cheap Controls
 
-Phase 2 aims to rule out shallow explanations for self-correction behavior before touching any mechanistic probes. All tests execute remotely on Modal using T4 GPUs via `@app.function` decorators and share helper utilities in `phase2_utils.py`.
+Phase 2 aims to rule out shallow explanations for self-correction behavior before touching any mechanistic probes. 
 
-### Infrastructure & Shared Utilities (`phase2_utils.py`)
-- **Modal App & Mounts**: Configures `phase2_image` with `torch`, `transformers`, `accelerate` and mounts the repository workspace (`project_mount`).
-- **Custom LogitsProcessor**: Implements `TokenSuppressionLogitsProcessor` to set logit scores of specified token IDs to $-\infty$ during generation.
-- **Dataset & Transcript I/O**: Shared functions for loading problems and reading/saving transcript JSONL records.
+**Infrastructure & Execution on Kaggle (Tesla T4 GPU)**
+While the initial design supported Modal, **Phase 2 testing is executed entirely on Kaggle using a Tesla T4 GPU** to avoid cloud API issues and execute models natively.
+- **`run.ipynb` Notebook:** The primary execution environment. It acts as the driver to clone the repository into Kaggle, install dependencies, and run the Python test scripts directly on the Kaggle Tesla T4 instance using the `--local` flag.
+
+### Generating the Summary Report
+After running the tests, you can generate a markdown table with category percentages (just like Phase 1) using the summary tool:
+```bash
+python3 summarize_phase2_token_forcing.py
+# Outputs: data/transcripts/phase2_test1_token_forcing_summary.md
+```
+
 
 ---
 
 ### Test 1: Token-Forcing Baseline (`test1_token_forcing.py`)
+- **Question**: Is self-correction easily broken if we block the model from using common correction words (like "wait" or "actually"), or can it still find a way to correct itself?
 - **Objective**: Test if self-correction is a fragile surface reflex by suppressing correction reflex tokens during generation.
 - **Implementation**: Uses `TokenSuppressionLogitsProcessor` to disallow tokens corresponding to `"Wait"`, `"wait"`, `"Actually"`, `"however"`, `"But"`, `"Correction"`.
 - **How to Run**:
   ```bash
-  python test1_token_forcing.py
+  python test1_token_forcing.py --local
 
   # Specify custom problem set or output transcript path:
-  python test1_token_forcing.py --problems data/problems/sample_problems.json --output data/transcripts/phase2_token_forcing.jsonl
+  python test1_token_forcing.py --local --problems data/problems/sample_problems.json --output data/transcripts/phase2_token_forcing.jsonl
   ```
 
 ---
 
 ### Test 2: Hindsight "Just Ask" Baseline (`test2_hindsight.py`)
+- **Question**: Does the model actually "know" a step was wrong even when it fails to fix it on its own?
 - **Objective**: Determine if the model can retroactively identify errors it failed to spontaneously correct in Phase 1.
 - **Implementation**: Loads Phase 1 transcripts where the model exhibited `Rationalization` or `Commits to Error`, appends the strict prompt `"Was the previous reasoning step correct? Answer strictly Yes or No, and explain why."`, and evaluates post-hoc accuracy.
 - **How to Run**:
@@ -369,6 +378,7 @@ Phase 2 aims to rule out shallow explanations for self-correction behavior befor
 ---
 
 ### Test 3: Anomaly-vs-Wrongness Control (`test3_anomaly.py`)
+- **Question**: Is the model reacting to actual logical errors, or is it just panicking because a sentence sounds weird or unusual?
 - **Objective**: Determine whether the model corrects logical wrongness or merely distributional oddity (weirdly phrased but factually true text).
 - **Implementation**: Injects factually true but syntactically odd statements (`InjectionType.ANOMALY_WEIRD_TRUE`, e.g., `"Note: mathematically speaking, four is an even number and oxygen is a gas."`) at the same 30% token depth as Phase 1. Supports static `injections` overrides inside `sample_problems.json`.
 - **How to Run**:
@@ -379,3 +389,23 @@ Phase 2 aims to rule out shallow explanations for self-correction behavior befor
   python test3_anomaly.py --problems data/problems/sample_problems.json --output data/transcripts/phase2_anomaly.jsonl
   ```
 
+
+## Phase 2 Analysis Execution
+
+To synthesize the results across the Phase 1 baseline and all Phase 2 tests (Token-Forcing, Hindsight, and Anomaly Control), use the unified analysis script.
+
+### How to Run
+```bash
+python analyze_phase2_suite.py \
+    --p1 data/transcripts/phase1_result_evaluate_adversarial_distilled.jsonl \
+    --t1 data/transcripts/phase2_token_forcing.jsonl \
+    --t2 data/transcripts/phase2_hindsight.jsonl \
+    --t3 data/transcripts/phase2_anomaly.jsonl \
+    --output phase2_suite_analysis_report.md
+```
+
+### Output Metrics Explained
+- **Test 1 vs. Phase 1 (Habit vs. Logic):** Calculates the percentage shifts (deltas) in categories (Explicit Correction, Silent Drift, Rationalization, Commits to Error) to show how token-forcing affects reasoning.
+- **Test 2 vs. Test 1 (Post-Hoc Awareness):** Reports the **Recovery Rate** (how often post-hoc prompting fixes a forced error) and the **Double-Down Rate** (stubborn defense of errors).
+- **Test 2 vs. Phase 1 (Forced Post-Hoc vs. Natural Mid-Stream):** Highlights the discrepancy between autonomous correction rates and external post-hoc prompting.
+- **Test 3 vs. Phase 1 (Over-Correction):** Reports the **False-Positive Rate**, demonstrating how often the model "corrects" factually true but unusual premises.

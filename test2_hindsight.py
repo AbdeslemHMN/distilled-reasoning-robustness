@@ -32,15 +32,18 @@ def run_hindsight(input_transcript: str, output_file: str, use_local: bool = Fal
         if not base_text:
             base_text = record.get("forced_prefix", "") + record.get("continuation", "")
             
-        # FIX: Provide a clean structural boundary so the model exits its CoT / generation loop
+        # FIX: DeepSeek/Qwen models require ChatML formatting to break out of base-completion mode
+        # otherwise they try to auto-complete the prompt as a template (hence "[Your Answer]").
         full_prompt = (
-            f"[BEGIN TRANSCRIPT]\n{base_text}\n[END TRANSCRIPT]\n\n"
-            f"Review the reasoning steps above. Was the previous reasoning step correct? "
-            f"Answer strictly with 'Yes' or 'No' as your very first word, followed by a brief explanation.\n"
-            f"Answer:"
+            f"<|im_start|>user\n"
+            f"Please review the following transcript of a reasoning process:\n\n"
+            f"--- TRANSCRIPT ---\n{base_text}\n--- END TRANSCRIPT ---\n\n"
+            f"Look closely at the final reasoning step in the transcript above. Was it mathematically and logically correct?\n"
+            f"Answer strictly with 'Yes' or 'No' as your very first word, followed by a brief explanation.\n<|im_end|>\n"
+            f"<|im_start|>assistant\n"
         )
         
-        # Ask the model via standard text response (max 64 tokens, zero temperature)
+        # Ask the model via standard text response (max 128 tokens, zero temperature)
         answer = model.generate_response(full_prompt).strip()
         
         # Improved heuristic parsing to catch variations or token loops

@@ -82,7 +82,7 @@ class LocalReasoningModel:
         return self._generate(forced_prefix_text, config.MAX_NEW_TOKENS_CONTINUATION, suppress_tokens=suppress_tokens)
         
     def generate_response(self, prompt: str) -> str:
-        return self._generate(prompt, 64, temperature=0.0)
+        return self._generate(prompt, 128, temperature=0.0)
         
     def get_suppressed_token_ids(self, words: list[str]) -> list[int]:
         from phase2_utils import get_suppressed_token_ids

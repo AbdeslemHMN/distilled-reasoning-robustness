@@ -40,7 +40,6 @@ dist/
 .python-version
 
 # --- Large Evaluation Logs & Raw Transcripts ---
-data/transcripts/*.jsonl
 data/transcripts/*.txt
 *.log
 
