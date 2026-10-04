@@ -11,6 +11,9 @@ from src.harness import format_problem_prompt
 from src.injections import inject_error, InjectionType, build_forced_prefix_text
 
 def run_anomaly(problems_file: str, output_file: str, use_local: bool = False):
+    # Clear the output file before starting the loop to prevent duplicates across runs
+    open(output_file, 'w').close()
+
     
     if use_local:
         from src.model_loader import LocalReasoningModel

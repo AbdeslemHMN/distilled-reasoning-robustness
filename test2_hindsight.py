@@ -9,6 +9,9 @@ import argparse
 from phase2_utils import load_transcripts, save_transcript
 
 def run_hindsight(input_transcript: str, output_file: str, use_local: bool = False):
+    # Clear the output file before starting the loop to prevent duplicates across runs
+    open(output_file, 'w').close()
+
     # Load transcripts filtered for failed self-corrections
     records = load_transcripts(input_transcript, filter_categories=["Rationalization", "Commits to Error"])
     print(f"Loaded {len(records)} records for hindsight evaluation.")
